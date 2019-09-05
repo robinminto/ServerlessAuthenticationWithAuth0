@@ -1,0 +1,15 @@
+bin
+obj
+tools
+/packages
+TestResult.xml
+
+*.user
+.vs
+*.ncrunchsolution*
+*.ncrunchproject*
+*_NCrunch_*
+*.playlist
+
+Build
+/BuildScripts/temp-migration
