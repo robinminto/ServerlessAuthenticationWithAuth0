@@ -7,8 +7,11 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Logging;
 
 namespace ServerlessAuthenticationWithAuth0
 {
@@ -27,21 +30,20 @@ namespace ServerlessAuthenticationWithAuth0
             };
 
             ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                $"{issuer}/.well-known/openid-configuration",
+                $"{issuer}.well-known/openid-configuration",
                 new OpenIdConnectConfigurationRetriever(),
                 documentRetriever
             );
         }
 
-        public static async Task<ClaimsPrincipal> ValidateTokenAsync(HttpContext context, ILogger log)
+        public static async Task<ClaimsPrincipal> ValidateTokenAsync(string bearerToken, ILogger log)
         {
-            var bearerToken = await context.GetTokenAsync("Bearer", "Authorization");
             log.LogInformation($"Bearer token: {bearerToken}");
 
-            //if (string.IsNullOrEmpty(bearerToken))
-            //{
-            //    return null;
-            //}
+            if (string.IsNullOrEmpty(bearerToken))
+            {
+                return null;
+            }
 
             var config = await ConfigurationManager.GetConfigurationAsync(CancellationToken.None);
             var issuer = Environment.GetEnvironmentVariable("ISSUER");
@@ -49,10 +51,6 @@ namespace ServerlessAuthenticationWithAuth0
 
             log.LogInformation($"issuer: {issuer}");
             log.LogInformation($"audience: {audience}");
-            if (string.IsNullOrEmpty(bearerToken))
-            {
-                return null;
-            }
 
             var validationParameter = new TokenValidationParameters()
             {
@@ -84,8 +82,9 @@ namespace ServerlessAuthenticationWithAuth0
                     ConfigurationManager.RequestRefresh();
                     tries++;
                 }
-                catch (SecurityTokenException)
+                catch (SecurityTokenException exception)
                 {
+                    log.LogError(exception, "Unable to validate token");
                     return null;
                 }
             }

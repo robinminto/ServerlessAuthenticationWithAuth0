@@ -20,7 +20,10 @@ namespace ServerlessAuthenticationWithAuth0
             log.LogInformation("C# HTTP trigger function processed a request.");
 
             ClaimsPrincipal principal;
-            if ((principal = await Security.ValidateTokenAsync(req.HttpContext, log)) == null)
+
+            // This is a hack. I'm not clear why req.HttpContext.GetTokenAsync(JwtBearerDefaults.AuthenticationScheme... isn't working.
+            var bearerToken = req.HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+            if ((principal = await Security.ValidateTokenAsync(bearerToken, log)) == null)
             {
                 return new UnauthorizedResult();
             }
