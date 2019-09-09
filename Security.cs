@@ -35,7 +35,7 @@ namespace ServerlessAuthenticationWithAuth0
 
         public static async Task<ClaimsPrincipal> ValidateTokenAsync(HttpContext context, ILogger log)
         {
-            var bearerToken = await context.GetTokenAsync("Bearer", "Authorization");
+            var bearerToken = await context.GetTokenAsync("Bearer");
             log.LogInformation($"Bearer token: {bearerToken}");
 
             //if (string.IsNullOrEmpty(bearerToken))
