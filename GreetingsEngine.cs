@@ -1,5 +1,5 @@
-using System;
 using System.IO;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -19,6 +19,12 @@ namespace ServerlessAuthenticationWithAuth0
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
+            ClaimsPrincipal principal;
+            if ((principal = await Security.ValidateTokenAsync(req.HttpContext, log)) == null)
+            {
+                return new UnauthorizedResult();
+            }
+
             string name = req.Query["name"];
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -27,7 +33,7 @@ namespace ServerlessAuthenticationWithAuth0
 
             return name != null
                 ? (ActionResult)new OkObjectResult(new GreetingResponse
-                    { Greeting = $"Hello, {name}", AuthenticationType = "Auth0" })
+                    { Greeting = $"Hello, {name}", AuthenticationType = "Auth0", PrincipalName = principal.Identity.Name })
                 : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
         }
     }
