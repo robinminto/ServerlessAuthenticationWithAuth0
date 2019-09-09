@@ -4,6 +4,5 @@ namespace ServerlessAuthenticationWithAuth0
     {
         public string Greeting { get; set; }
         public string AuthenticationType { get; set; }
-        public string PrincipalName { get; set; }
     }
 }
