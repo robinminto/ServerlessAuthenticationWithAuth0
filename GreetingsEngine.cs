@@ -26,7 +26,8 @@ namespace ServerlessAuthenticationWithAuth0
             name = name ?? data?.name;
 
             return name != null
-                ? (ActionResult)new OkObjectResult($"Hello, {name}")
+                ? (ActionResult)new OkObjectResult(new GreetingResponse
+                    { Greeting = $"Hello, {name}", AuthenticationType = "Auth0" })
                 : new BadRequestObjectResult("Please pass a name on the query string or in the request body");
         }
     }
